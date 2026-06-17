@@ -1,12 +1,13 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { DashboardComponent } from './components/dashboard/dashboard'; // <-- IMPORTAMOS EL DASHBOARD
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [DashboardComponent], 
+  templateUrl: './app.html',    
+  styleUrl: './app.css'          
 })
-export class App {
-  protected readonly title = signal('control-inventario');
+export class AppComponent {
+  title = 'control-inventario';
 }
