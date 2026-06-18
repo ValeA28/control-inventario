@@ -10,10 +10,10 @@
     <div class="flex flex-col gap-1.5">
       <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Buscar Producto</label>
       <input 
-        type="text" 
-        [ngModel]="terminoBusqueda()" 
+        type="text"
+        [ngModel]="terminoBusqueda()"
         (ngModelChange)="terminoBusqueda.set($event)"
-        placeholder="Ej: zapato, electrónica..." 
+        placeholder="Ej: zapato, electrónica..."
         class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
       />
     </div>
@@ -21,7 +21,7 @@
     <div class="flex flex-col gap-1.5">
       <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Estado del Stock</label>
       <select 
-        [ngModel]="filtroEstado()" 
+        [ngModel]="filtroEstado()"
         (ngModelChange)="filtroEstado.set($event)"
         class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
       >
@@ -70,23 +70,36 @@
             <td class="p-4 text-right font-mono font-bold text-emerald-400">
               ${{ prod.precioVenta }}
             </td>
-            <td class="p-4 text-center font-mono font-semibold" [ngClass]="{'text-red-400': prod.stockActual === 0, 'text-amber-400': prod.stockActual > 0 && prod.stockActual <= 5}">
-              {{ prod.stockActual }} u.
+            <td class="p-4 text-center">
+              <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <button 
+                  (click)="prod.stockActual = prod.stockActual - 1" 
+                  style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                  -
+                </button>
+                <span style="width: 35px; display: inline-block; text-align: center; font-family: monospace; font-weight: bold; color: #ffffff;">
+                  {{ prod.stockActual }}
+                </span>
+                <button 
+                  (click)="prod.stockActual = prod.stockActual + 1" 
+                  style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                  +
+                </button>
+              </div>
             </td>
             <td class="p-4 text-center">
               <span 
                 class="inline-flex items-center justify-center text-xs font-semibold px-2.5 py-1 rounded-full border"
                 [ngClass]="{
-                  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': prod.estadoStock === 'Disponible',
-                  'bg-amber-500/10 text-amber-400 border-amber-500/20': prod.estadoStock === 'Bajo Stock',
-                  'bg-red-500/10 text-red-400 border-red-500/20': prod.estadoStock === 'Sin Stock'
+                  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': prod.stockActual > 5,
+                  'bg-amber-500/10 text-amber-400 border-amber-500/20': prod.stockActual > 0 && prod.stockActual <= 5,
+                  'bg-red-500/10 text-red-400 border-red-500/20': prod.stockActual === 0
                 }"
               >
-                {{ prod.estadoStock }}
+                {{ prod.stockActual === 0 ? 'Sin Stock' : (prod.stockActual <= 5 ? 'Bajo Stock' : 'Disponible') }}
               </span>
             </td>
           </tr>
-
           <tr *ngIf="productosFiltrados().length === 0">
             <td colspan="7" class="p-8 text-center text-neutral-500 italic">
               No se encontraron productos que coincidan con la búsqueda.
