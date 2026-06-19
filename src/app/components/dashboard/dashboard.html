@@ -1,5 +1,6 @@
 <div class="min-h-screen bg-neutral-950 text-neutral-100 p-4 md:p-8 relative overflow-x-hidden">
   
+  <!-- SIDEBAR / MENÚ LATERAL -->
   <div 
     class="fixed top-0 left-0 h-full w-64 bg-neutral-900 border-r border-neutral-800 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between"
     [class.translate-x-0]="sidebarAbierto()"
@@ -21,13 +22,13 @@
 
       <nav class="p-4 flex flex-col gap-2">
         <button 
-          (click)="sidebarAbierto.set(false)"
+          (click)="vistaActual.set('principal'); sidebarAbierto.set(false)"
           class="w-full text-left px-4 py-3 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold text-sm border border-emerald-500/20 flex items-center gap-3"
         >
           📊 Pantalla Principal
         </button>
         <button 
-          (click)="sidebarAbierto.set(false)"
+          (click)="vistaActual.set('stock'); sidebarAbierto.set(false)"
           class="w-full text-left px-4 py-3 rounded-xl text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 text-sm flex items-center gap-3 transition-colors"
         >
           📦 Productos en Stock
@@ -55,6 +56,7 @@
     class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
   ></div>
 
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
   <nav class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-900 border border-neutral-800 rounded-xl px-6 py-4 shadow-lg">
     <div class="flex items-center gap-4 w-full sm:w-auto">
       <button 
@@ -85,200 +87,295 @@
     </div>
   </nav>
 
-  <header class="mb-8 text-center">
-    <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
-      Control de Inventario
-    </h1>
-    <p class="text-neutral-400 text-sm mt-1">Gestión y alertas de stock en tiempo real</p>
-  </header>
-
-  <section class="flex flex-col md:flex-row items-center justify-center gap-6 mb-8 max-w-6xl mx-auto">
-    <div class="flex flex-col gap-1.5 w-full md:w-80">
-      <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Buscar Producto</label>
-      <input 
-        type="text"
-        [ngModel]="terminoBusqueda()"
-        (ngModelChange)="terminoBusqueda.set($event)"
-        placeholder="Ej: zapato, bota, camisa..."
-        class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+  <!-- PANTALLA PRINCIPAL DE BIENVENIDA -->
+  <div *ngIf="vistaActual() === 'principal'" class="max-w-6xl mx-auto text-center py-16 px-4">
+    <h2 class="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 mb-4 uppercase">
+      Glow & Style Boutique
+    </h2>
+    <p class="text-neutral-400 text-base md:text-lg max-w-xl mx-auto mb-10 font-medium">
+      Te damos la bienvenida nuestra pagina con las mejores tendencias.
+    </p>
+    <div class="rounded-2xl border border-neutral-800 overflow-hidden max-w-5xl mx-auto shadow-2xl bg-neutral-900/50 p-2">
+      <img 
+        src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1200" 
+        alt="Boutique" 
+        class="w-full h-[500px] object-cover rounded-xl"
       />
-    </div>
-
-    <div class="flex flex-col gap-1.5 w-full md:w-80">
-      <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Tipo de Prenda</label>
-      <select 
-        [ngModel]="filtroPrenda()"
-        (ngModelChange)="filtroPrenda.set($event)"
-        class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
-      >
-        <option value="Todos">Todas las prendas</option>
-        <option value="Remera">Remeras</option>
-        <option value="Buzo">Buzos</option>
-        <option value="Campera">Camperas</option>
-        <option value="Pantalón">Pantalones</option>
-        <option value="Camisa">Camisas</option>
-      </select>
-    </div>
-
-    <div class="flex flex-col gap-1.5 w-full md:w-80">
-      <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Estado del Stock</label>
-      <select 
-        [ngModel]="filtroEstado()"
-        (ngModelChange)="filtroEstado.set($event)"
-        class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
-      >
-        <option value="Todos">Todos los estados</option>
-        <option value="Disponible">Disponible</option>
-        <option value="Bajo Stock">Bajo Stock</option>
-        <option value="Sin Stock">Sin Stock</option>
-      </select>
-    </div>
-
-    <div class="flex items-center justify-center text-xs text-neutral-400 h-full md:pt-6 whitespace-nowrap">
-      Mostrando <span class="font-bold text-emerald-400 mx-1">{{ productosFiltrados().length }}</span> productos.
-    </div>
-  </section>
-
-  <div 
-    *ngIf="mostrarFormulario()"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-  >
-    <div class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <h3 class="text-lg font-bold text-neutral-100 mb-4 flex items-center gap-2">
-        👕 Registrar Nueva Prenda
-      </h3>
-      
-      <form (ngSubmit)="agregarProducto()" class="flex flex-col gap-4">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-neutral-400 uppercase">Nombre del Producto</label>
-          <input 
-            type="text" 
-            [ngModel]="nuevoNombre()" 
-            (ngModelChange)="nuevoNombre.set($event)"
-            name="nombre"
-            placeholder="Ej: Camisa Lino Slim Fit"
-            required
-            class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-neutral-400 uppercase">Precio de Costo ($)</label>
-          <input 
-            type="number" 
-            [ngModel]="nuevoPrecioCosto()" 
-            (ngModelChange)="nuevoPrecioCosto.set($event)"
-            name="costo"
-            placeholder="Ej: 35"
-            min="1"
-            required
-            class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <div class="text-xs text-neutral-500 italic mt-1">
-          * El precio de venta y la ganancia se calcularán automáticamente (+40%).
-        </div>
-
-        <div class="flex gap-3 justify-end mt-4">
-          <button 
-            type="button"
-            (click)="mostrarFormulario.set(false)"
-            class="px-4 py-2 rounded-lg bg-neutral-800 text-neutral-300 text-sm font-semibold hover:bg-neutral-700 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button 
-            type="submit"
-            class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-neutral-950 font-bold text-sm transition-colors"
-          >
-            Guardar Producto
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
-  <main class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse text-sm">
-        <thead class="bg-neutral-950/50 border-b border-neutral-800 text-neutral-400 font-medium">
-          <tr>
-            <th class="p-4">Imagen</th>
-            <th class="p-4">Producto</th>
-            <th class="p-4">Categoría</th>
-            <th class="p-4 text-right">Precio Costo</th>
-            <th class="p-4 text-right">Precio Venta</th>
-            <th class="p-4 text-center">Stock</th>
-            <th class="p-4 text-center">Estado</th>
-            <th class="p-4 text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-neutral-800/60">
-          <tr *ngFor="let prod of productosFiltrados()" class="hover:bg-neutral-850/40 transition-colors">
-            <td class="p-4">
-              <img [src]="prod.images[0]" [alt]="prod.title" class="w-10 h-10 object-cover rounded-lg border border-neutral-800 bg-neutral-950" />
-            </td>
-            <td class="p-4 font-semibold text-neutral-200 max-w-xs truncate">
-              {{ prod.title }}
-            </td>
-            <td class="p-4">
-              <span class="bg-neutral-800 text-neutral-300 text-xs px-2 py-1 rounded-md border border-neutral-700">
-                {{ prod.category.name }}
-              </span>
-            </td>
-            <td class="p-4 text-right font-mono text-neutral-400">
-                ${{ prod.id < 1000 && prod.price > 1000 ? 45 : prod.price }}
-            </td>
-            <td class="p-4 text-right font-mono font-bold text-emerald-400">
-                ${{ prod.id < 1000 && prod.price > 1000 ? 63 : prod.precioVenta }}
-             </td>
-            <td class="p-4 text-center">
-              <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <button 
-                  (click)="restarStock(prod)" 
-                  style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
-                  -
-                </button>
-                <span style="width: 35px; display: inline-block; text-align: center; font-family: monospace; font-weight: bold; color: #ffffff;">
-                  {{ prod.stockActual }}
-                </span>
-                <button 
-                  (click)="sumarStock(prod)" 
-                  style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
-                  +
-                </button>
-              </div>
-            </td>
-            <td class="p-4 text-center">
-              <span 
-                class="inline-flex items-center justify-center text-xs font-semibold px-2.5 py-1 rounded-full border"
-                [ngClass]="{
-                  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': prod.stockActual > 5,
-                  'bg-amber-500/10 text-amber-400 border-amber-500/20': prod.stockActual > 0 && prod.stockActual <= 5,
-                  'bg-red-500/10 text-red-400 border-red-500/20': prod.stockActual === 0
-                }"
-              >
-                {{ prod.stockActual === 0 ? 'Sin Stock' : (prod.stockActual <= 5 ? 'Bajo Stock' : 'Disponible') }}
-              </span>
-            </td>
-            <td class="p-4 text-center">
-              <button 
-                (click)="eliminarProducto(prod.id)"
-                class="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 transition-all font-medium text-xs"
-                title="Eliminar producto"
-              >
-                🗑️ Eliminar
-              </button>
-            </td>
-          </tr>
-          <tr *ngIf="productosFiltrados().length === 0">
-            <td colspan="8" class="p-8 text-center text-neutral-500 italic">
-              No se encontraron productos que coincidan con la búsqueda.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- PANTALLA DE PRODUCTOS EN STOCK -->
+  <div *ngIf="vistaActual() === 'stock'">
+    
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
+        Control de Inventario
+      </h1>
+      <p class="text-neutral-400 text-sm mt-1">Gestión y alertas de stock en tiempo real</p>
+    </header>
+
+    <!-- FILTROS DE BÚSQUEDA -->
+    <section class="flex flex-col md:flex-row items-center justify-center gap-6 mb-8 max-w-6xl mx-auto">
+      <div class="flex flex-col gap-1.5 w-full md:w-80">
+        <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Buscar Producto</label>
+        <input 
+          type="text"
+          [ngModel]="terminoBusqueda()"
+          (ngModelChange)="terminoBusqueda.set($event)"
+          placeholder="Ej: zapato, bota, camisa..."
+          class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5 w-full md:w-80">
+        <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Tipo de Prenda</label>
+        <select 
+          [ngModel]="filtroPrenda()"
+          (ngModelChange)="filtroPrenda.set($event)"
+          class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+        >
+          <option value="Todos">Todas las prendas</option>
+          <option value="Remera">Remeras</option>
+          <option value="Buzo">Buzos</option>
+          <option value="Campera">Camperas</option>
+          <option value="Pantalón">Pantalones</option>
+          <option value="Camisa">Camisas</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col gap-1.5 w-full md:w-80">
+        <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Estado del Stock</label>
+        <select 
+          [ngModel]="filtroEstado()"
+          (ngModelChange)="filtroEstado.set($event)"
+          class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+        >
+          <option value="Todos">Todos los estados</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Bajo Stock">Bajo Stock</option>
+          <option value="Sin Stock">Sin Stock</option>
+        </select>
+      </div>
+
+      <div class="flex items-center justify-center text-xs text-neutral-400 h-full md:pt-6 whitespace-nowrap">
+        Mostrando <span class="font-bold text-emerald-400 mx-1">{{ productosFiltrados().length }}</span> productos.
+      </div>
+    </section>
+
+    <!-- MODAL: REGISTRAR NUEVA PRENDA -->
+    <div 
+      *ngIf="mostrarFormulario()"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+    >
+      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+        <h3 class="text-lg font-bold text-neutral-100 mb-4 flex items-center gap-2">
+          👕 Registrar Nueva Prenda
+        </h3>
+        
+        <form (ngSubmit)="agregarProducto()" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-neutral-400 uppercase">Nombre del Producto</label>
+            <input 
+              type="text" 
+              [ngModel]="nuevoNombre()" 
+              (ngModelChange)="nuevoNombre.set($event)"
+              name="nombre"
+              placeholder="Ej: Camisa Lino Slim Fit"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-neutral-400 uppercase">Precio de Costo ($)</label>
+            <input 
+              type="number" 
+              [ngModel]="nuevoPrecioCosto()" 
+              (ngModelChange)="nuevoPrecioCosto.set($event)"
+              name="costo"
+              placeholder="Ej: 35"
+              min="1"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
+          <div class="text-xs text-neutral-500 italic mt-1">
+            * El precio de venta y la ganancia se calcularán automáticamente (+40%).
+          </div>
+
+          <div class="flex gap-3 justify-end mt-4">
+            <button 
+              type="button"
+              (click)="mostrarFormulario.set(false)"
+              class="px-4 py-2 rounded-lg bg-neutral-800 text-neutral-300 text-sm font-semibold hover:bg-neutral-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-neutral-950 font-bold text-sm transition-colors"
+            >
+              Guardar Producto
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </main>
-</div>
+
+    <!-- TABLA DE INVENTARIO -->
+    <main class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead class="bg-neutral-950/50 border-b border-neutral-800 text-neutral-400 font-medium">
+            <tr>
+              <th class="p-4">Imagen</th>
+              <th class="p-4">Producto</th>
+              <th class="p-4">Categoría</th>
+              <th class="p-4 text-right">Precio Costo</th>
+              <th class="p-4 text-right">Precio Venta</th>
+              <th class="p-4 text-center">Stock</th>
+              <th class="p-4 text-center">Estado</th>
+              <th class="p-4 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-800/60">
+            <tr *ngFor="let prod of productosFiltrados()" class="hover:bg-neutral-850/40 transition-colors">
+              <td class="p-4">
+                <img [src]="prod.images[0]" [alt]="prod.title" class="w-10 h-10 object-cover rounded-lg border border-neutral-800 bg-neutral-950" />
+              </td>
+              <td class="p-4 font-semibold text-neutral-200 max-w-xs truncate">
+                {{ prod.title }}
+              </td>
+              <td class="p-4">
+                <span class="bg-neutral-800 text-neutral-300 text-xs px-2 py-1 rounded-md border border-neutral-700">
+                  {{ prod.category.name }}
+                </span>
+              </td>
+              <td class="p-4 text-right font-mono text-neutral-400">
+                  ${{ prod.price }}
+              </td>
+              <td class="p-4 text-right font-mono font-bold text-emerald-400">
+                  ${{ prod.precioVenta }}
+              </td>
+              <td class="p-4 text-center">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                  <button 
+                    (click)="restarStock(prod)" 
+                    style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                    -
+                  </button>
+                  <span style="width: 35px; display: inline-block; text-align: center; font-family: monospace; font-weight: bold; color: #ffffff;">
+                    {{ prod.stockActual }}
+                  </span>
+                  <button 
+                    (click)="sumarStock(prod)" 
+                    style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                    +
+                  </button>
+                </div>
+              </td>
+              <td class="p-4 text-center">
+                <span 
+                  class="inline-flex items-center justify-center text-xs font-semibold px-2.5 py-1 rounded-full border"
+                  [ngClass]="{
+                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': prod.stockActual > 5,
+                    'bg-amber-500/10 text-amber-400 border-amber-500/20': prod.stockActual > 0 && prod.stockActual <= 5,
+                    'bg-red-500/10 text-red-400 border-red-500/20': prod.stockActual === 0
+                  }"
+                >
+                  {{ prod.stockActual === 0 ? 'Sin Stock' : (prod.stockActual <= 5 ? 'Bajo Stock' : 'Disponible') }}
+                </span>
+              </td>
+              
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button 
+                    (click)="seleccionarParaEditar(prod)"
+                    class="px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-neutral-950 border border-amber-500/20 transition-all font-medium text-xs flex items-center gap-1"
+                    title="Editar producto"
+                  >
+                    ✏️ Editar
+                  </button>
+               
+                  <button 
+                    (click)="eliminarProducto(prod.id)"
+                    class="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 transition-all font-medium text-xs"
+                    title="Eliminar producto"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="productosFiltrados().length === 0">
+              <td colspan="8" class="p-8 text-center text-neutral-500 italic">
+                No se encontraron productos que coincidan con la búsqueda.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- MODAL FLOTANTE: EDITAR PRENDA -->
+    <div 
+      *ngIf="mostrarFormularioEditar()"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+    >
+      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+        <h3 class="text-lg font-bold text-neutral-100 mb-4 flex items-center gap-2">
+          ✏️ Editar Prenda
+        </h3>
+        
+        <form (ngSubmit)="guardarEdicion()" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-neutral-400 uppercase">Nombre del Producto</label>
+            <input 
+              type="text" 
+              [ngModel]="editarNombre()" 
+              (ngModelChange)="editarNombre.set($event)"
+              name="editarNombre"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-neutral-400 uppercase">Precio de Costo ($)</label>
+            <input 
+              type="number" 
+              [ngModel]="editarPrecioCosto()" 
+              (ngModelChange)="editarPrecioCosto.set($event)"
+              name="editarCosto"
+              min="1"
+              required
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
+          <div class="text-xs text-neutral-500 italic mt-1">
+            * El precio de venta y la ganancia se recalcularán automáticamente (+40%).
+          </div>
+
+          <div class="flex gap-3 justify-end mt-4">
+            <button 
+              type="button"
+              (click)="mostrarFormularioEditar.set(false)"
+              class="px-4 py-2 rounded-lg bg-neutral-800 text-neutral-300 text-sm font-semibold hover:bg-neutral-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold text-sm transition-colors"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div> <!-- Cierre de vistaActual === 'stock' -->
+</div> <!-- Cierre del div principal min-h-screen -->

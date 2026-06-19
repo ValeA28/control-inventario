@@ -22,8 +22,13 @@ export class DashboardComponent implements OnInit {
   filtroPrenda = signal<string>('Todos');
   sidebarAbierto = signal<boolean>(false);
   mostrarFormulario = signal<boolean>(false);
+  vistaActual = signal<string>('principal');
   nuevoNombre = signal<string>('');
   nuevoPrecioCosto = signal<number>(0); 
+  mostrarFormularioEditar = signal<boolean>(false);
+  productoSeleccionado = signal<ProductoInventario | null>(null);
+  editarNombre = signal<string>('');
+  editarPrecioCosto = signal<number>(0);
 
   // 3. Ciclo de vida asíncrono para escuchar la API
   ngOnInit(): void {
@@ -80,6 +85,9 @@ export class DashboardComponent implements OnInit {
           const esRopaOriginalValida = p.category.name.toLowerCase() === 'clothes' && 
             (p.title.toLowerCase().includes('shirt') || p.title.toLowerCase().includes('hoodie') || p.title.toLowerCase().includes('camisa'));
 
+          // Calculamos el costo real de base para limpiar las simulaciones previas de la API
+          const costoBase = p.id < 1000 && p.price > 1000 ? 45 : p.price;
+
           if (esRopaOriginalValida) {
             let tituloModificado = p.title;
             if (p.title.toLowerCase().includes('t-shirt') && !p.title.toLowerCase().includes('remera')) tituloModificado = 'Remera ' + p.title;
@@ -88,18 +96,23 @@ export class DashboardComponent implements OnInit {
             const tieneFoto = p.images && p.images[0] && p.images[0].startsWith('http');
             const imgFinal = tieneFoto ? p.images[0] : fotosRemeras[0];
 
-            return { ...p, title: tituloModificado, images: [imgFinal] };
+            return { 
+              ...p, 
+              title: tituloModificado, 
+              price: costoBase,
+              precioCosto: costoBase,
+              costo: costoBase,
+              images: [imgFinal] 
+            };
           }
 
-          // MEZCLADOR INTELIGENTE: Usamos multiplicadores y el índice para que las combinaciones varíen constantemente
+          // MEZCLADOR INTELIGENTE
           const tipo = tipos[index % tipos.length];
           const color = colores[(index * 3 + p.id) % colores.length];
           const estilo = estilos[(index * 7) % estilos.length];
 
-          // Creamos el nombre único sin números feos al final
           const tituloUnico = `${tipo} ${color} ${estilo}`;
 
-          // Asignamos la foto del grupo correspondiente para que coincida con el tipo de prenda
           let fotoFinal = '';
           if (tipo === 'Remera') fotoFinal = fotosRemeras[index % fotosRemeras.length];
           else if (tipo === 'Buzo') fotoFinal = fotosBuzos[index % fotosBuzos.length];
@@ -110,6 +123,9 @@ export class DashboardComponent implements OnInit {
           return {
             ...p,
             title: tituloUnico,
+            price: costoBase,
+            precioCosto: costoBase,
+            costo: costoBase,
             images: [fotoFinal],
             category: {
               ...p.category,
@@ -119,14 +135,14 @@ export class DashboardComponent implements OnInit {
         });
 
         this.productos.set(datosTransformados);
-        console.log('Inventario boutique 100% variado cargado:', datosTransformados);
+        console.log('Inventario boutique 100% variado cargado y normalizado:', datosTransformados);
       },
       error: (err) => {
         console.error('Error al descargar datos de la API:', err);
       }
     });
   }
-
+  
   // 4. Lógica calculada de filtrado en tiempo real
   productosFiltrados = computed(() => {
     let resultado = this.productos();
@@ -200,6 +216,7 @@ export class DashboardComponent implements OnInit {
       id: Date.now(),
       title: this.nuevoNombre(),
       price: costo,
+      precioCosto: costo,
       precioVenta: venta,
       stockActual: 10,
       estadoStock: 'Disponible',
@@ -219,5 +236,47 @@ export class DashboardComponent implements OnInit {
     this.nuevoPrecioCosto.set(0);
     this.mostrarFormulario.set(false);
     console.log('Nuevo producto agregado localmente:', nuevoProd);
+  }
+
+  // Función para abrir el modal con los datos del producto ya cargados
+  seleccionarParaEditar(producto: ProductoInventario): void {
+    this.productoSeleccionado.set(producto);
+    this.editarNombre.set(producto.title);
+    
+    // RESPALDO: Si no encuentra 'price', busca en 'precioCosto' o cualquier propiedad cruzada
+    const costoReal = producto.price || (producto as any).precioCosto || (producto as any).costo || 0;
+    this.editarPrecioCosto.set(costoReal);
+    
+    this.mostrarFormularioEditar.set(true);
+  }
+
+  // Función para guardar los cambios en la lista
+  guardarEdicion(): void {
+    const prod = this.productoSeleccionado();
+    if (!prod || !this.editarNombre().trim() || this.editarPrecioCosto() <= 0) return;
+
+    const costo = this.editarPrecioCosto();
+    const venta = Math.round(costo * 1.4); // Calculamos el 40% de ganancia automático
+
+    this.productos.update(lista =>
+      lista.map(p => {
+        if (p.id === prod.id) {
+          return {
+            ...p,
+            title: this.editarNombre(),
+            price: costo,
+            precioCosto: costo,   // <-- ASEGURAMOS EL RESPALDO AL GUARDAR
+            costo: costo,
+            precioVenta: venta
+          };
+        }
+        return p;
+      })
+    );
+
+    // Cerramos el modal y limpiamos el producto seleccionado
+    this.mostrarFormularioEditar.set(false);
+    this.productoSeleccionado.set(null);
+    console.log('Producto editado con éxito!');
   }
 }
