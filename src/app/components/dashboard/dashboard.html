@@ -1,27 +1,90 @@
-<div class="min-h-screen bg-neutral-950 text-neutral-100 p-4 md:p-8">
+<div class="min-h-screen bg-neutral-950 text-neutral-100 p-4 md:p-8 relative overflow-x-hidden">
   
-  <!-- BARRA DE NAVEGACIÓN (NAVBAR) -->
-  <nav class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-900 border border-neutral-800 rounded-xl px-6 py-4 shadow-lg">
-    <div class="flex items-center gap-3">
-      <!-- Icono de Ropa/Boutique -->
-      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
-        🛍️
+  <div 
+    class="fixed top-0 left-0 h-full w-64 bg-neutral-900 border-r border-neutral-800 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between"
+    [class.translate-x-0]="sidebarAbierto()"
+    [class.-translate-x-full]="!sidebarAbierto()"
+  >
+    <div>
+      <div class="p-6 border-b border-neutral-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛍️</span>
+          <span class="font-bold tracking-tight text-neutral-200">Glow & Style</span>
+        </div>
+        <button 
+          (click)="sidebarAbierto.set(false)"
+          class="text-neutral-400 hover:text-white text-lg font-bold px-2 py-1 rounded-lg hover:bg-neutral-800 transition-colors"
+        >
+          ✕
+        </button>
       </div>
-      <div>
-        <span class="font-bold tracking-tight text-neutral-200">Glow & Style</span>
-        <span class="text-xs text-neutral-500 block">Boutique & Co.</span>
+
+      <nav class="p-4 flex flex-col gap-2">
+        <button 
+          (click)="sidebarAbierto.set(false)"
+          class="w-full text-left px-4 py-3 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold text-sm border border-emerald-500/20 flex items-center gap-3"
+        >
+          📊 Pantalla Principal
+        </button>
+        <button 
+          (click)="sidebarAbierto.set(false)"
+          class="w-full text-left px-4 py-3 rounded-xl text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 text-sm flex items-center gap-3 transition-colors"
+        >
+          📦 Productos en Stock
+        </button>
+        
+        <hr class="border-neutral-800 my-2">
+
+        <button 
+          (click)="mostrarFormulario.set(true); sidebarAbierto.set(false)"
+          class="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm flex items-center gap-3 shadow-lg shadow-emerald-950/20 hover:opacity-90 transition-opacity"
+        >
+          ➕ Agregar Producto
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-neutral-800 text-center text-xs text-neutral-500 italic">
+      Glow & Style v1.0
+    </div>
+  </div>
+
+  <div 
+    *ngIf="sidebarAbierto()" 
+    (click)="sidebarAbierto.set(false)"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+  ></div>
+
+  <nav class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-900 border border-neutral-800 rounded-xl px-6 py-4 shadow-lg">
+    <div class="flex items-center gap-4 w-full sm:w-auto">
+      <button 
+        (click)="sidebarAbierto.set(true)"
+        class="p-2.5 rounded-lg bg-neutral-950 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700 transition-all flex flex-col gap-1 justify-center items-center w-10 h-10"
+        title="Abrir menú"
+      >
+        <span class="w-5 h-0.5 bg-current rounded-full"></span>
+        <span class="w-5 h-0.5 bg-current rounded-full"></span>
+        <span class="w-5 h-0.5 bg-current rounded-full"></span>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+          🛍️
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-neutral-200">Glow & Style</span>
+          <span class="text-xs text-neutral-500 block">Boutique & Co.</span>
+        </div>
       </div>
     </div>
     
-    <!-- Integrantes / Usuario Logueado -->
-    <div class="flex items-center gap-3 bg-neutral-950/60 border border-neutral-800/80 px-4 py-2 rounded-lg">
+    <div class="flex items-center gap-3 bg-neutral-950/60 border border-neutral-800/80 px-4 py-2 rounded-lg self-end sm:self-auto">
       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
       <span class="text-xs text-neutral-400 font-medium">Desarrollado por:</span>
       <span class="text-xs font-bold text-emerald-400">Valentina y Julieta</span>
     </div>
   </nav>
 
-  <!-- ENCABEZADO CENTRADO -->
   <header class="mb-8 text-center">
     <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">
       Control de Inventario
@@ -29,8 +92,7 @@
     <p class="text-neutral-400 text-sm mt-1">Gestión y alertas de stock en tiempo real</p>
   </header>
 
-  <!-- FILTROS CENTRADOS -->
-  <section class="flex flex-col md:flex-row items-center justify-center gap-6 mb-8 max-w-4xl mx-auto">
+  <section class="flex flex-col md:flex-row items-center justify-center gap-6 mb-8 max-w-6xl mx-auto">
     <div class="flex flex-col gap-1.5 w-full md:w-80">
       <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Buscar Producto</label>
       <input 
@@ -40,6 +102,22 @@
         placeholder="Ej: zapato, bota, camisa..."
         class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
       />
+    </div>
+
+    <div class="flex flex-col gap-1.5 w-full md:w-80">
+      <label class="text-xs font-semibold text-neutral-400 uppercase tracking-wider text-center md:text-left">Tipo de Prenda</label>
+      <select 
+        [ngModel]="filtroPrenda()"
+        (ngModelChange)="filtroPrenda.set($event)"
+        class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+      >
+        <option value="Todos">Todas las prendas</option>
+        <option value="Remera">Remeras</option>
+        <option value="Buzo">Buzos</option>
+        <option value="Campera">Camperas</option>
+        <option value="Pantalón">Pantalones</option>
+        <option value="Camisa">Camisas</option>
+      </select>
     </div>
 
     <div class="flex flex-col gap-1.5 w-full md:w-80">
@@ -56,12 +134,71 @@
       </select>
     </div>
 
-    <div class="flex items-center justify-center text-xs text-neutral-400 h-full md:pt-6">
+    <div class="flex items-center justify-center text-xs text-neutral-400 h-full md:pt-6 whitespace-nowrap">
       Mostrando <span class="font-bold text-emerald-400 mx-1">{{ productosFiltrados().length }}</span> productos.
     </div>
   </section>
 
-  <!-- TABLA DE PRODUCTOS -->
+  <div 
+    *ngIf="mostrarFormulario()"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+  >
+    <div class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <h3 class="text-lg font-bold text-neutral-100 mb-4 flex items-center gap-2">
+        👕 Registrar Nueva Prenda
+      </h3>
+      
+      <form (ngSubmit)="agregarProducto()" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-neutral-400 uppercase">Nombre del Producto</label>
+          <input 
+            type="text" 
+            [ngModel]="nuevoNombre()" 
+            (ngModelChange)="nuevoNombre.set($event)"
+            name="nombre"
+            placeholder="Ej: Camisa Lino Slim Fit"
+            required
+            class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-neutral-400 uppercase">Precio de Costo ($)</label>
+          <input 
+            type="number" 
+            [ngModel]="nuevoPrecioCosto()" 
+            (ngModelChange)="nuevoPrecioCosto.set($event)"
+            name="costo"
+            placeholder="Ej: 35"
+            min="1"
+            required
+            class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3.5 py-2 text-sm text-neutral-200 focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+        </div>
+
+        <div class="text-xs text-neutral-500 italic mt-1">
+          * El precio de venta y la ganancia se calcularán automáticamente (+40%).
+        </div>
+
+        <div class="flex gap-3 justify-end mt-4">
+          <button 
+            type="button"
+            (click)="mostrarFormulario.set(false)"
+            class="px-4 py-2 rounded-lg bg-neutral-800 text-neutral-300 text-sm font-semibold hover:bg-neutral-700 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit"
+            class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-neutral-950 font-bold text-sm transition-colors"
+          >
+            Guardar Producto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <main class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-sm">
@@ -74,6 +211,7 @@
             <th class="p-4 text-right">Precio Venta</th>
             <th class="p-4 text-center">Stock</th>
             <th class="p-4 text-center">Estado</th>
+            <th class="p-4 text-center">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-800/60">
@@ -90,15 +228,15 @@
               </span>
             </td>
             <td class="p-4 text-right font-mono text-neutral-400">
-              ${{ prod.price }}
+                ${{ prod.id < 1000 && prod.price > 1000 ? 45 : prod.price }}
             </td>
             <td class="p-4 text-right font-mono font-bold text-emerald-400">
-              ${{ prod.precioVenta }}
-            </td>
+                ${{ prod.id < 1000 && prod.price > 1000 ? 63 : prod.precioVenta }}
+             </td>
             <td class="p-4 text-center">
               <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <button 
-                  (click)="prod.stockActual = prod.stockActual - 1" 
+                  (click)="restarStock(prod)" 
                   style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
                   -
                 </button>
@@ -106,7 +244,7 @@
                   {{ prod.stockActual }}
                 </span>
                 <button 
-                  (click)="prod.stockActual = prod.stockActual + 1" 
+                  (click)="sumarStock(prod)" 
                   style="width: 28px; height: 28px; background-color: #262626; color: #ffffff; border: 1px solid #404040; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center;">
                   +
                 </button>
@@ -124,9 +262,18 @@
                 {{ prod.stockActual === 0 ? 'Sin Stock' : (prod.stockActual <= 5 ? 'Bajo Stock' : 'Disponible') }}
               </span>
             </td>
+            <td class="p-4 text-center">
+              <button 
+                (click)="eliminarProducto(prod.id)"
+                class="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 transition-all font-medium text-xs"
+                title="Eliminar producto"
+              >
+                🗑️ Eliminar
+              </button>
+            </td>
           </tr>
           <tr *ngIf="productosFiltrados().length === 0">
-            <td colspan="7" class="p-8 text-center text-neutral-500 italic">
+            <td colspan="8" class="p-8 text-center text-neutral-500 italic">
               No se encontraron productos que coincidan con la búsqueda.
             </td>
           </tr>
