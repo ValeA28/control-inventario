@@ -102,6 +102,7 @@ export class DashboardComponent implements OnInit {
               price: costoBase,
               precioCosto: costoBase,
               costo: costoBase,
+              precioVenta: Math.round(costoBase * 1.4), // <-- AGREGAMOS ESTA LÍNEA
               images: [imgFinal] 
             };
           }
@@ -126,6 +127,7 @@ export class DashboardComponent implements OnInit {
             price: costoBase,
             precioCosto: costoBase,
             costo: costoBase,
+            precioVenta: Math.round(costoBase * 1.4), // <-- AGREGAMOS ESTA LÍNEA
             images: [fotoFinal],
             category: {
               ...p.category,
@@ -164,6 +166,24 @@ export class DashboardComponent implements OnInit {
     }
 
     return resultado;
+  }); 
+  
+  // Variables nuevas y aisladas para el análisis (No modifican ningún producto)
+  costoTotalStock = computed(() => {
+    return this.productos().reduce((total, p) => {
+      const costo = p.price || 0;
+      const stock = p.stockActual || 0;
+      return total + (costo * stock);
+    }, 0);
+  });
+
+  gananciaTotalEstimada = computed(() => {
+    return this.productos().reduce((total, p) => {
+      const costo = p.price || 0;
+      const venta = costo * 1.4;
+      const stock = p.stockActual || 0;
+      return total + ((venta - costo) * stock);
+    }, 0);
   });
 
   // 5. FUNCIONES PARA LOS BOTONES DE JULIETA (Incrementar y Decrementar Stock)
@@ -216,7 +236,6 @@ export class DashboardComponent implements OnInit {
       id: Date.now(),
       title: this.nuevoNombre(),
       price: costo,
-      precioCosto: costo,
       precioVenta: venta,
       stockActual: 10,
       estadoStock: 'Disponible',

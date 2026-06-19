@@ -256,7 +256,7 @@
                   ${{ prod.price }}
               </td>
               <td class="p-4 text-right font-mono font-bold text-emerald-400">
-                  ${{ prod.precioVenta }}
+                  ${{ prod.price * 1.4 | number:'1.0-0' }}
               </td>
               <td class="p-4 text-center">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -317,6 +317,26 @@
         </table>
       </div>
     </main>
+
+    <div class="financial-summary-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; padding: 25px; background-color: #0a0a0a; border-radius: 16px; border: 1px solid #1f1f1f;">
+      
+      <div class="summary-card" style="padding: 20px; border-left: 4px solid #f59e0b; background-color: #141414; border-radius: 12px; border: 1px solid #1f1f1f; border-left-width: 4px;">
+        <p style="margin: 0; font-size: 11px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Inversión Total en Stock</p>
+        <h3 style="margin: 8px 0 4px 0; font-size: 32px; color: #ffffff; font-weight: 900; font-family: monospace;">
+          ${{ costoTotalStock() | number:'1.0-0' }}
+        </h3>
+        <small style="color: #525252; font-size: 12px; display: block;">Capital retenido total de las prendas en depósito</small>
+      </div>
+
+      <div class="summary-card" style="padding: 20px; border-left: 4px solid #10b981; background-color: #141414; border-radius: 12px; border: 1px solid #1f1f1f; border-left-width: 4px;">
+        <p style="margin: 0; font-size: 11px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Ganancia Total Remanente</p>
+        <h3 style="margin: 8px 0 4px 0; font-size: 32px; color: #10b981; font-weight: 900; font-family: monospace;">
+          ${{ gananciaTotalEstimada() | number:'1.0-0' }}
+        </h3>
+        <small style="color: #525252; font-size: 12px; display: block;">Ganancia neta esperada al liquidar el stock (+40%)</small>
+      </div>
+
+    </div>
 
     <!-- MODAL FLOTANTE: EDITAR PRENDA -->
     <div 
