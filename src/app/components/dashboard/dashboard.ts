@@ -1,14 +1,16 @@
+import { UbBadgeDirective } from '@/components/ui/badge';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { ProductService } from '../../services/product';
 import { ProductoInventario } from '../../services/product.model';
+import { UbSeparatorDirective } from '@/components/ui/separator';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './dashboard.html',
+  imports: [CommonModule, FormsModule, UbSeparatorDirective, UbBadgeDirective],
+  templateUrl: './dashboard.html', 
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit {
@@ -32,38 +34,38 @@ export class DashboardComponent implements OnInit {
 
   // 📸 BANCOS DE IMÁGENES GLOBALES PARA LA ROTACIÓN AUTOMÁTICA (Manera 2)
   private fotosRemeras = [
-    'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=150',
-    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=150',
-    'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=150',
-    'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=150'
-  ];
-
-  private fotosBuzos = [
-    'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=150',
-    'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=150',
-    'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=150',
-    'https://images.unsplash.com/photo-1578762560072-1590d2c496c8?w=150'
-  ];
-
-  private fotosCamperas = [
-    'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=150',
-    'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=150',
-    'https://images.unsplash.com/photo-1544441893-675973e31985?w=150',
-    'https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?w=150'
+    'assets/img/remeras/21147027-j-2-bbfa00f4e637aa7ef117259745550623-1024-1024.jpg',
+    'assets/img/remeras/images (1).jpg',
+    'assets/img/remeras/images (2).jpg',
+    'assets/img/remeras/images.jpg'
   ];
 
   private fotosPantalones = [
-    'https://images.unsplash.com/photo-1542272604-787c3835535d?w=150',
-    'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=150',
-    'https://images.unsplash.com/photo-1582552938357-32b906df43c3?w=150',
-    'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=150'
+    'assets/img/pantalones/c05e66a6ce38250e56d673e70b623e86.jpg',
+    'assets/img/pantalones/images (3).jpg',
+    'assets/img/pantalones/images (4).jpg',
+    'assets/img/pantalones/PAULINA-scaled.jpg'
   ];
 
   private fotosCamisas = [
-    'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=150',
-    'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=150',
-    'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=150',
-    'https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=150'
+    'assets/img/camisas/2a18c5c2219dd7e4772ccfcf7ba4497f.jpg',
+    'assets/img/camisas/c71a28ac148a64aeea9943a9979c98899df46ce5818f0bd0313a01d1da0264da209199.jpg',
+    'assets/img/camisas/images (7).jpg',
+    'assets/img/camisas/images (8).jpg'
+  ];
+
+  private fotosCamperas = [
+    'assets/img/camperas/11440067_800.jpg',
+    'assets/img/camperas/11592499_800.jpg',
+    'assets/img/camperas/Campera-Termica-Impermeable-Bomberomania-Interior-de-Polar-Coyote-12-1-320x320.jpg',
+    'assets/img/camperas/images (6).jpg'
+  ];
+
+  private fotosBuzos = [
+    'assets/img/buzos/95deb3846a24bbe8ab3727fc941ef56ffd848e9f34a005d825d52b6a5d06c4c029240.jpg',
+    'assets/img/buzos/11360545_800.jpg',
+    'assets/img/buzos/D_635366-MLA110431832093_042026-O.jpg',
+    'assets/img/buzos/images (5).jpg'
   ];
 
   // 3. Ciclo de vida asíncrono para escuchar la API o cargar desde el disco local
@@ -109,18 +111,20 @@ export class DashboardComponent implements OnInit {
               else tituloUnico = 'Camisa ' + p.title;
             }
 
-            // CORRECCIÓN DE FOTOS: Sincronización estricta basada en el nombre real del título único
+            // 🔄 TU FÓRMULA CORREGIDA CON EL APUNTADO CORRETO (% 4 FIJO)
+            const posicion = index % 4;
             let fotoFinal = '';
+            
             if (tituloUnico.startsWith('Remera')) {
-              fotoFinal = this.fotosRemeras[index % this.fotosRemeras.length];
+              fotoFinal = this.fotosRemeras[posicion];
             } else if (tituloUnico.startsWith('Buzo')) {
-              fotoFinal = this.fotosBuzos[index % this.fotosBuzos.length];
+              fotoFinal = this.fotosBuzos[posicion];
             } else if (tituloUnico.startsWith('Campera')) {
-              fotoFinal = this.fotosCamperas[index % this.fotosCamperas.length];
+              fotoFinal = this.fotosCamperas[posicion];
             } else if (tituloUnico.startsWith('Pantalón')) {
-              fotoFinal = this.fotosPantalones[index % this.fotosPantalones.length];
+              fotoFinal = this.fotosPantalones[posicion];
             } else {
-              fotoFinal = this.fotosCamisas[index % this.fotosCamisas.length];
+              fotoFinal = this.fotosCamisas[posicion];
             }
 
             return {
@@ -257,20 +261,46 @@ export class DashboardComponent implements OnInit {
     let fotoAutomatica = this.fotosRemeras[0]; // Foto comodín por si el filtro está en "Todos"
 
     // Contamos cuántos productos del mismo tipo ya existen para elegir la siguiente foto de la lista
-    const cantidadMismoTipo = this.productos().filter(p => p.title.toLowerCase().includes(tipoElegido.toLowerCase())).length;
+    const nombreLower = this.nuevoNombre().toLowerCase();
 
-    if (tipoElegido === 'Remera') {
-      fotoAutomatica = this.fotosRemeras[cantidadMismoTipo % this.fotosRemeras.length];
-    } else if (tipoElegido === 'Buzo') {
-      fotoAutomatica = this.fotosBuzos[cantidadMismoTipo % this.fotosBuzos.length];
-    } else if (tipoElegido === 'Campera') {
-      fotoAutomatica = this.fotosCamperas[cantidadMismoTipo % this.fotosCamperas.length];
-    } else if (tipoElegido === 'Pantalón') {
-      fotoAutomatica = this.fotosPantalones[cantidadMismoTipo % this.fotosPantalones.length];
-    } else if (tipoElegido === 'Camisa') {
-      fotoAutomatica = this.fotosCamisas[cantidadMismoTipo % this.fotosCamisas.length];
-    }
+const cantidadMismoTipo = this.productos().filter(p => {
+  const titulo = p.title.toLowerCase();
 
+  if (nombreLower.includes('remera')) {
+    return titulo.includes('remera');
+  }
+
+  if (nombreLower.includes('buzo')) {
+    return titulo.includes('buzo');
+  }
+
+  if (nombreLower.includes('campera')) {
+    return titulo.includes('campera');
+  }
+
+  if (nombreLower.includes('pantalón') || nombreLower.includes('pantalon')) {
+    return titulo.includes('pantalón') || titulo.includes('pantalon');
+  }
+
+  if (nombreLower.includes('camisa')) {
+    return titulo.includes('camisa');
+  }
+
+  return false;
+}).length;
+
+    // 🔄 SE MANTIENE TU LÓGICA DE AGREGAR USANDO % 4 FIJO BASADO EN TUS ARREGLOS DE 4 ELEMENTOS
+    if (nombreLower.includes('remera')) {
+  fotoAutomatica = this.fotosRemeras[cantidadMismoTipo % this.fotosRemeras.length];
+} else if (nombreLower.includes('buzo')) {
+  fotoAutomatica = this.fotosBuzos[cantidadMismoTipo % this.fotosBuzos.length];
+} else if (nombreLower.includes('campera')) {
+  fotoAutomatica = this.fotosCamperas[cantidadMismoTipo % this.fotosCamperas.length];
+} else if (nombreLower.includes('pantalón') || nombreLower.includes('pantalon')) {
+  fotoAutomatica = this.fotosPantalones[cantidadMismoTipo % this.fotosPantalones.length];
+} else if (nombreLower.includes('camisa')) {
+  fotoAutomatica = this.fotosCamisas[cantidadMismoTipo % this.fotosCamisas.length];
+}
     const nuevoProd: ProductoInventario = {
       id: Date.now(),
       title: this.nuevoNombre(),
