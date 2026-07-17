@@ -1,0 +1,17 @@
+<nav class="flex justify-between items-center p-4 bg-neutral-900 border-b border-neutral-800">
+  <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+    Glow & Style
+  </h1>
+
+  <div>
+    <!-- Este botón solo se ve si NO estás logueado -->
+    <button *ngIf="!estaLogueado()" (click)="irALogin()" class="text-white bg-emerald-600 px-4 py-2 rounded-md font-bold text-sm">
+      Iniciar Sesión
+    </button>
+
+    <!-- Este botón solo se ve si YA estás logueado -->
+    <button *ngIf="estaLogueado()" (click)="cerrarSesion()" class="text-neutral-400 hover:text-white font-bold text-sm">
+      Cerrar Sesión
+    </button>
+  </div>
+</nav>

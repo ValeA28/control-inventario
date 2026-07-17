@@ -1,0 +1,22 @@
+<div class="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
+  <div class="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+    <h2 class="text-2xl font-bold text-white mb-6 text-center">Crear cuenta en Glow & Style</h2>
+    
+    <div class="flex flex-col gap-4">
+      <input [(ngModel)]="email" type="email" placeholder="Correo electrónico" 
+             class="w-full bg-neutral-950 border border-neutral-800 p-3 rounded-lg text-white">
+      
+      <input [(ngModel)]="password" type="password" placeholder="Contraseña" 
+             class="w-full bg-neutral-950 border border-neutral-800 p-3 rounded-lg text-white">
+      
+      <button (click)="registrarse()" 
+              class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold p-3 rounded-lg transition-colors">
+        Registrarse
+      </button>
+
+      <a routerLink="/login" class="text-neutral-400 text-center text-sm hover:text-white">
+        ¿Ya tienes cuenta? Inicia sesión
+      </a>
+    </div>
+  </div>
+</div>
