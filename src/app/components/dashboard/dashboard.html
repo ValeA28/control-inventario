@@ -36,7 +36,9 @@
           📊 Pantalla Principal
         </button>
 
+        <!-- SOLO VISIBLE SI ESTÁ LOGUEADO -->
         <button 
+          *ngIf="usuarioLogueado"
           (click)="vistaActual.set('stock'); sidebarAbierto.set(false)"
           class="w-full text-left px-4 py-3 rounded-xl text-sm flex items-center gap-3 transition-colors"
           [class.bg-emerald-500/10]="vistaActual() === 'stock'"
@@ -97,18 +99,31 @@
       </div>
     </div>
     
-    <div class="flex items-center gap-3 bg-neutral-950/60 border border-neutral-800/80 px-4 py-2 rounded-lg self-end sm:self-auto">
-      <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-      <span class="text-xs text-neutral-400 font-medium">Desarrollado por:</span>
-      <span class="text-xs font-bold text-emerald-400">Valentina y Julieta</span>
+    <div class="flex items-center gap-4 self-end sm:self-auto">
+      <button 
+        *ngIf="usuarioLogueado && !esAdmin"
+        (click)="router.navigate(['/checkout'])"
+        class="p-2 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-emerald-400 hover:border-emerald-500 transition-all flex items-center gap-2"
+        title="Ver carrito de compras"
+      >
+        🛒 <span class="font-bold text-xs bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">{{ cartService.totalItems() }}</span>
+      </button>
+
+      <div class="flex items-center gap-3 bg-neutral-950/60 border border-neutral-800/80 px-4 py-2 rounded-lg">
+        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-xs text-neutral-400 font-medium">Desarrollado por:</span>
+        <span class="text-xs font-bold text-emerald-400">Valentina y Julieta</span>
+      </div>
     </div>
   </nav>
 
-
   <!-- ================================================================================= -->
-  <!-- PANTALLA PRINCIPAL (CORREGIDA Y BIEN CERRADA) -->
-  <!-- ================================================================================= -->
-  <div *ngIf="vistaActual() === 'principal'" class="max-w-6xl mx-auto text-center py-16 px-4">
+<!-- PANTALLA PRINCIPAL PÚBLICA Y PANEL DE ADMINISTRACIÓN -->
+<!-- ================================================================================= -->
+<div *ngIf="vistaActual() === 'principal'" class="max-w-6xl mx-auto py-12 px-4">
+  
+  <!-- VISTA PARA VISITANTES / CLIENTES (Mantiene tu foto y diseño original) -->
+  <div *ngIf="!esAdmin" class="text-center mb-16">
     <h2 class="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 mb-4 uppercase">
       Glow & Style Boutique
     </h2>
@@ -123,6 +138,212 @@
       />
     </div>
   </div>
+
+  <!-- VISTA PARA ADMINISTRADOR / VENDEDOR (Panel de Gestión Completo) -->
+  <div *ngIf="esAdmin" class="max-w-5xl mx-auto space-y-8 text-left">
+    
+    <!-- Cartel de bienvenida -->
+    <div class="bg-gradient-to-r from-neutral-900 via-neutral-900 to-emerald-950/30 border border-neutral-800 p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/50">
+          Panel de Administración
+        </span>
+        <h2 class="text-3xl font-black text-white mt-3">¡Hola, Administradora! 👋</h2>
+        <p class="text-neutral-400 text-xs md:text-sm mt-1">Acá tenés el resumen general de tu boutique en tiempo real.</p>
+      </div>
+      
+      <div class="flex gap-3 w-full md:w-auto">
+        <button (click)="irAlStock()" class="flex-1 md:flex-none px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-xl transition-all shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2">
+          📦 Ver Inventario
+        </button>
+        <button (click)="vistaActual.set('stock'); mostrarFormulario.set(true)" class="flex-1 md:flex-none px-5 py-3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold text-xs rounded-xl transition-all border border-neutral-700 flex items-center justify-center gap-2">
+          ➕ Agregar Prenda
+        </button>
+      </div>
+    </div>
+
+    <!-- TARJETAS DE MÉTRICAS RÁPIDAS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Tarjeta 1: Total de productos -->
+      <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Productos Totales</p>
+          <h3 class="text-3xl font-black text-white font-mono mt-1">{{ productos().length }}</h3>
+          <p class="text-[11px] text-neutral-500 mt-1">Modelos registrados en catálogo</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400">
+          🛍️
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Inversión en Stock -->
+      <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Inversión en Stock</p>
+          <h3 class="text-3xl font-black text-amber-400 font-mono mt-1">${{ costoTotalStock() | number:'1.0-0' }}</h3>
+          <p class="text-[11px] text-neutral-500 mt-1">Capital retenido en prendas</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl text-amber-400">
+          💰
+        </div>
+      </div>
+
+      <!-- Tarjeta 3: Ganancia Proyectada -->
+      <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl flex items-center justify-between sm:col-span-2 lg:col-span-1">
+        <div>
+          <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Ganancia Estimada</p>
+          <h3 class="text-3xl font-black text-emerald-400 font-mono mt-1">${{ gananciaTotalEstimada() | number:'1.0-0' }}</h3>
+          <p class="text-[11px] text-neutral-500 mt-1">Margen esperado del +40%</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400">
+          📈
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN DE GRÁFICOS Y ESTADÍSTICAS EN TIEMPO REAL -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+      
+      <!-- Gráfico 1: Torta de Categorías -->
+      <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+        <div>
+          <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+            📊 Distribución de Stock por Categoría
+          </h4>
+          <p class="text-xs text-neutral-400 mb-6">Proporción de prendas disponibles en depósito</p>
+        </div>
+
+        <div class="w-full h-64 flex items-center justify-center">
+          <canvas 
+            baseChart
+            [data]="doughnutChartData()"
+            [type]="doughnutChartType">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico 2: Barras de Stock por Producto -->
+      <div class="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+        <div>
+          <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+            📈 Nivel de Inventario por Producto
+          </h4>
+          <p class="text-xs text-neutral-400 mb-6">Unidades disponibles de los principales productos</p>
+        </div>
+
+        <div class="w-full h-64 flex items-center justify-center">
+          <canvas 
+            baseChart
+            [data]="barChartData()"
+            [options]="barChartOptions"
+            [type]="barChartType">
+          </canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACCESO RÁPIDO -->
+    <div class="bg-neutral-900/60 border border-neutral-800 p-6 rounded-2xl text-center space-y-3">
+      <h4 class="text-base font-bold text-white">¿Querés gestionar tu catálogo?</h4>
+      <p class="text-xs text-neutral-400 max-w-md mx-auto">Ingresá a la sección de inventario para actualizar precios, sumar stock o cargar nuevos modelos de prendas.</p>
+      <button (click)="irAlStock()" class="px-6 py-2.5 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-emerald-400 font-bold text-xs rounded-xl transition-all border border-emerald-500/30">
+        Ir al Control de Inventario ➔
+      </button>
+    </div>
+
+  </div>
+
+    <!-- SECCIÓN: PRENDAS DESTACADAS (Incluye Pantalón) -->
+    <div *ngIf="!usuarioLogueado" class="mb-16">
+      <div class="text-center mb-8">
+        <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-400">Prendas Destacadas</h3>
+        <p class="text-neutral-400 text-xs md:text-sm mt-1">Iniciá sesión para conocer los precios exclusivos y realizar tu pedido.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        
+        <!-- Prenda 1: Camisas -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between p-3">
+          <img src="assets/img/camisas/2a18c5c2219dd7e4772ccfcf7ba4497f.jpg" alt="Camisa de lino" class="w-full h-48 object-cover rounded-xl">
+          <div class="p-3 flex-1 flex flex-col justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">Camisas</span>
+              <h4 class="text-white font-bold text-sm mt-2">Camisa de Lino Classic</h4>
+              <p class="text-neutral-400 text-[11px] mt-1 leading-relaxed">Fresca, elegante y de corte relajado.</p>
+            </div>
+            <button (click)="router.navigate(['/login'])" class="mt-4 w-full py-2 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
+              Iniciá sesión para ver precio
+            </button>
+          </div>
+        </div>
+
+        <!-- Prenda 2: Remeras -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between p-3">
+          <img src="assets/img/remeras/21147027-j-2-bbfa00f4e637aa7ef117259745550623-1024-1024.jpg" alt="Remera Denim" class="w-full h-48 object-cover rounded-xl">
+          <div class="p-3 flex-1 flex flex-col justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">Remeras</span>
+              <h4 class="text-white font-bold text-sm mt-2">Remera Azul Denim</h4>
+              <p class="text-neutral-400 text-[11px] mt-1 leading-relaxed">Algodón 100% premium, suave al tacto.</p>
+            </div>
+            <button (click)="router.navigate(['/login'])" class="mt-4 w-full py-2 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
+              Iniciá sesión para ver precio
+            </button>
+          </div>
+        </div>
+
+        <!-- Prenda 3: Pantalones -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between p-3">
+          <img src="assets/img/pantalones/c05e66a6ce38250e56d673e70b623e86.jpg" alt="Pantalón Rosa Pastel" class="w-full h-48 object-cover rounded-xl">
+          <div class="p-3 flex-1 flex flex-col justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">Pantalones</span>
+              <h4 class="text-white font-bold text-sm mt-2">Pantalón Rosa Pastel</h4>
+              <p class="text-neutral-400 text-[11px] mt-1 leading-relaxed">Diseño de tiro alto y calce cómodo.</p>
+            </div>
+            <button (click)="router.navigate(['/login'])" class="mt-4 w-full py-2 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
+              Iniciá sesión para ver precio
+            </button>
+          </div>
+        </div>
+
+        <!-- Prenda 4: Buzos -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between p-3">
+          <img src="assets/img/buzos/95deb3846a24bbe8ab3727fc941ef56ffd848e9f34a005d825d52b6a5d06c4c029240.jpg" alt="Buzo Modern" class="w-full h-48 object-cover rounded-xl">
+          <div class="p-3 flex-1 flex flex-col justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">Buzos</span>
+              <h4 class="text-white font-bold text-sm mt-2">Buzo Off-White Modern</h4>
+              <p class="text-neutral-400 text-[11px] mt-1 leading-relaxed">Interior de friza, súper abrigado.</p>
+            </div>
+            <button (click)="router.navigate(['/login'])" class="mt-4 w-full py-2 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
+              Iniciá sesión para ver precio
+            </button>
+          </div>
+        </div>
+
+        <!-- Prenda 5: Camperas -->
+        <div class="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between p-3">
+          <img src="assets/img/camperas/11440067_800.jpg" alt="Campera Gris Vintage" class="w-full h-48 object-cover rounded-xl">
+          <div class="p-3 flex-1 flex flex-col justify-between mt-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-800/40">Camperas</span>
+              <h4 class="text-white font-bold text-sm mt-2">Campera Gris Vintage</h4>
+              <p class="text-neutral-400 text-[11px] mt-1 leading-relaxed">Diseño urbano e impermeable.</p>
+            </div>
+            <button (click)="router.navigate(['/login'])" class="mt-4 w-full py-2 bg-neutral-800 hover:bg-emerald-500 hover:text-neutral-950 text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
+              Iniciá sesión para ver precio
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div> <!-- CIERRA EL DIV DE LA PANTALLA PRINCIPAL -->
 
   <!-- ================================================================================= -->
   <!-- SECCIÓN DE STOCK (PRODUCTOS) -->
@@ -260,6 +481,7 @@
               <th class="p-4 text-right">Precio Venta</th>
               <th class="p-4 text-center" *ngIf="esAdmin">Stock</th>
               <th class="p-4 text-center">Estado</th>
+              <th class="p-4 text-center" *ngIf="usuarioLogueado && !esAdmin">Comprar</th>
               <th class="p-4 text-center" *ngIf="esAdmin">Acciones</th>
             </tr>
           </thead>
@@ -312,6 +534,18 @@
                 </span>
               </td>
               
+              <!-- BOTÓN AÑADIR AL CARRITO: SOLO CLIENTES LOGUEADOS -->
+              <td class="p-4 text-center" *ngIf="usuarioLogueado && !esAdmin">
+                <button 
+                  (click)="agregarAlCarrito(prod)"
+                  [disabled]="prod.stockActual === 0"
+                  class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-neutral-950 border border-emerald-500/30 transition-all font-bold text-xs flex items-center gap-1 mx-auto disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Añadir prenda al carrito"
+                >
+                  🛒 Añadir
+                </button>
+              </td>
+
               <td class="p-4 text-center" *ngIf="esAdmin">
                 <div class="flex items-center justify-center gap-2">
                   <button 
@@ -321,7 +555,7 @@
                   >
                     ✏️ Editar
                   </button>
-               
+                
                   <button 
                     (click)="eliminarProducto(prod.id)"
                     class="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 transition-all font-medium text-xs"
@@ -333,7 +567,7 @@
               </td>
             </tr>
             <tr *ngIf="productosFiltrados().length === 0">
-              <td colspan="8" class="p-8 text-center text-neutral-500 italic">
+              <td colspan="9" class="p-8 text-center text-neutral-500 italic">
                 No se encontraron productos que coincidan con la búsqueda.
               </td>
             </tr>
@@ -423,5 +657,131 @@
     </div>
 
   </div> <!-- CIERRA EL DIV DE LA SECCIÓN DE STOCK -->
+  
+  <!-- SECCIÓN DE RESEÑAS (OCULTA PARA EL ADMINISTRADOR) -->
+  <section *ngIf="!esAdmin" class="max-w-5xl mx-auto px-4 py-12 mt-8 border-t border-neutral-800">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 mb-2">
+        Opiniones de nuestros clientes
+      </h2>
+      <p class="text-xs md:text-sm text-neutral-400">
+        Conocé las experiencias en Glow & Style
+      </p>
+    </div>
 
-</div> <!-- CIERRA EL MIN-H-SCREEN PRINCIPAL -->
+    <!-- TARJETAS CON LAS RESEÑAS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+      <div *ngIf="resenas().length === 0" class="col-span-full text-center py-6 text-neutral-500 text-xs">
+        Aún no hay opiniones guardadas. ¡Sé la primera persona en dejar la tuya!
+      </div>
+
+      <div *ngFor="let item of resenas()" class="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-emerald-400 truncate max-w-[150px]">{{ item.usuarioEmail }}</span>
+            <span class="text-[10px] text-neutral-500">{{ item.fecha }}</span>
+          </div>
+
+          <div class="text-yellow-400 text-xs mb-2">
+            {{ '⭐'.repeat(item.calificacion) }}
+          </div>
+
+          <p class="text-xs text-neutral-300 italic leading-relaxed">
+            "{{ item.comentario }}"
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE NUEVA RESEÑA -->
+    <div *ngIf="usuarioLogueado; else cartelLogin" class="max-w-md mx-auto bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-xl">
+      <h3 class="text-sm font-bold text-neutral-100 mb-4 text-center">¡Dejanos tu opinión!</h3>
+      
+      <form (submit)="enviarResena()" class="space-y-3">
+        <div>
+          <label class="text-xs text-neutral-400 block mb-1">Calificación</label>
+          <select [(ngModel)]="nuevaCalificacion" name="calificacion" class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs text-yellow-400 focus:outline-none focus:border-emerald-500">
+            <option [value]="5">⭐⭐⭐⭐⭐ (5/5 Excelente)</option>
+            <option [value]="4">⭐⭐⭐⭐☆ (4/5 Muy Bueno)</option>
+            <option [value]="3">⭐⭐⭐☆☆ (3/5 Bueno)</option>
+            <option [value]="2">⭐⭐☆☆☆ (2/5 Regular)</option>
+            <option [value]="1">⭐☆☆☆☆ (1/5 Malo)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-neutral-400 block mb-1">Comentario</label>
+          <textarea [(ngModel)]="nuevoComentario" name="comentario" rows="3" required placeholder="Escribí tu experiencia..." class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 text-xs text-neutral-100 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold rounded-xl text-xs transition-all shadow-lg shadow-emerald-950/20">
+          Publicar Reseña
+        </button>
+      </form>
+    </div>
+
+    <!-- MENSAJE DE INVITACIÓN (Visitante no logueado) -->
+    <ng-template #cartelLogin>
+      <div class="text-center p-6 bg-neutral-900/50 border border-neutral-800 rounded-2xl max-w-md mx-auto">
+        <p class="text-xs text-neutral-400 mb-3">¿Querés dejar una reseña? Iniciá sesión con tu cuenta.</p>
+        <a routerLink="/login" class="inline-block px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl hover:bg-emerald-500 hover:text-neutral-950 transition-all">
+          Iniciar Sesión
+        </a>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- FOOTER (OCULTO PARA EL ADMINISTRADOR, BIEN DISTRIBUIDO) -->
+  <footer *ngIf="!esAdmin" class="mt-20 border-t border-neutral-800 bg-neutral-950/90 text-neutral-400 text-sm pt-12 pb-8 px-8 rounded-2xl shadow-inner">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 text-center md:text-left justify-between">
+      
+      <!-- Columna 1: Marca -->
+      <div class="space-y-3">
+        <h4 class="text-base font-bold text-emerald-400">Glow & Style</h4>
+        <p class="text-xs text-neutral-500 leading-relaxed max-w-xs">
+          Boutique de moda y tendencias exclusivas. La mejor calidad y estilo para vos.
+        </p>
+      </div>
+
+      <!-- Columna 2: Sobre Nosotros -->
+      <div class="space-y-3 md:pl-8">
+        <h5 class="text-xs font-bold text-white uppercase tracking-wider">Sobre Nosotros</h5>
+        <ul class="text-xs space-y-2 text-neutral-400">
+          <li><a href="#" class="hover:text-emerald-400 transition-colors">Nuestra Historia</a></li>
+          <li><a href="#" class="hover:text-emerald-400 transition-colors">Preguntas Frecuentes</a></li>
+          <li><a href="#" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Contacto -->
+      <div class="space-y-3 md:pl-8">
+        <h5 class="text-xs font-bold text-white uppercase tracking-wider">Contacto</h5>
+        <div class="text-xs space-y-2">
+          <p class="flex items-center justify-center md:justify-start gap-2">📍 Av. Principal 1234, San Martín Mendoza</p>
+          <p class="flex items-center justify-center md:justify-start gap-2">✉️ contacto@glowandstyle.com</p>
+          <p class="flex items-center justify-center md:justify-start gap-2">📞 +54 9 11 1234-5678</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="max-w-6xl mx-auto border-t border-neutral-900 mt-10 pt-6 text-center text-[11px] text-neutral-600">
+      &copy; 2026 Glow & Style. Desarrollado por Valentina y Julieta.
+    </div>
+  </footer>
+
+  <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+  <a 
+    *ngIf="!esAdmin" 
+    href="https://wa.me/5491112345678?text=Hola!%20Tengo%20una%20consulta%20sobre%20los%20productos%20de%20Glow%20%26%20Style" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 p-3.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center border border-emerald-300/30 group"
+    title="Contactar por WhatsApp">
+    
+    <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.594-1.152 4.208 4.301-1.128 1.595.993zm9.428-5.31c-.301-.15-1.785-.881-2.062-.982-.278-.101-.48-.15-.683.151-.202.301-.784.982-.961 1.183-.177.201-.355.226-.656.076-.301-.15-1.272-.469-2.424-1.498-.897-.801-1.502-1.791-1.678-2.092-.177-.301-.019-.464.131-.614.136-.135.301-.352.451-.528.15-.176.201-.301.301-.503.101-.201.05-.377-.025-.528-.075-.151-.683-1.683-.936-2.289-.247-.591-.498-.51-.683-.519-.176-.009-.377-.01-.578-.01s-.528.075-.804.377c-.277.301-1.055 1.031-1.055 2.516s1.08 2.916 1.231 3.117c.15.201 2.125 3.246 5.15 4.553.719.31 1.281.495 1.719.634.722.23 1.38.197 1.901.12.58-.087 1.785-.729 2.037-1.432.252-.703.252-1.281.176-1.432-.075-.151-.277-.226-.578-.376z"/>
+    </svg>
+  </a>
+
+</div>

@@ -10,8 +10,44 @@
     </button>
 
     <!-- Este botón solo se ve si YA estás logueado -->
-    <button *ngIf="estaLogueado()" (click)="cerrarSesion()" class="text-neutral-400 hover:text-white font-bold text-sm">
+    <button *ngIf="estaLogueado()" (click)="abrirConfirmacion()" class="text-neutral-400 hover:text-white font-bold text-sm">
       Cerrar Sesión
     </button>
   </div>
 </nav>
+
+<!-- MODAL PERSONALIZADO CENTRADO -->
+<div 
+  *ngIf="mostrarModalConfirmacion" 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+  (click)="cancelarCierre()"
+>
+  <div 
+    class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center relative text-neutral-100"
+    (click)="$event.stopPropagation()"
+  >
+    
+    <h3 class="text-lg font-bold text-neutral-100 mb-2">
+      ¿Cerrar Sesión?
+    </h3>
+    
+    <p class="text-xs text-neutral-400 mb-6">
+      ¿Estás segura de que deseas salir de tu cuenta?
+    </p>
+
+    <div class="flex gap-3 justify-center">
+      <button 
+        (click)="cancelarCierre()" 
+        class="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold text-xs transition-colors"
+      >
+        Cancelar
+      </button>
+      <button 
+        (click)="confirmarCierreSesion()" 
+        class="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 font-bold text-xs transition-all"
+      >
+        Sí, Cerrar Sesión
+      </button>
+    </div>
+  </div>
+</div>

@@ -4,10 +4,12 @@ import { LoginComponent } from './login/login';
 // Si está en 'components/dashboard/dashboard.component', ajusta la ruta:
 import { DashboardComponent } from './components/dashboard/dashboard';
 import { RegistroComponent } from './components/registro/registro';
+import { CheckoutComponent } from './components/checkout/checkout';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent }, // Ahora carga la página principal primero
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
-  { path: 'dashboard', component: DashboardComponent }
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'checkout', component: CheckoutComponent }
 ];

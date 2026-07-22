@@ -9,19 +9,30 @@ import { CommonModule } from '@angular/common';
   templateUrl: './header.html'
 })
 export class HeaderComponent {
+  mostrarModalConfirmacion = false;
+
   constructor(private router: Router) {}
 
   estaLogueado(): boolean {
     return localStorage.getItem('usuarioRol') !== null;
   }
 
-  cerrarSesion() {
-    localStorage.removeItem('usuarioRol');
-    this.router.navigate(['/']);
-    window.location.reload(); // Recargamos para que el Dashboard vea el cambio
+  abrirConfirmacion(): void {
+    this.mostrarModalConfirmacion = true;
   }
 
-  irALogin() {
+  cancelarCierre(): void {
+    this.mostrarModalConfirmacion = false;
+  }
+
+  confirmarCierreSesion(): void {
+    localStorage.removeItem('usuarioRol');
+    localStorage.removeItem('usuarioEmail');
+    this.mostrarModalConfirmacion = false;
+    this.router.navigate(['/login']);
+  }
+
+  irALogin(): void {
     this.router.navigate(['/login']);
   }
 }

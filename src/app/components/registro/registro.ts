@@ -1,31 +1,116 @@
 import { Component, inject } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth'; // Asegúrate de tener esta importación
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
+import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-registro',
   standalone: true,
-  imports: [FormsModule],
-  templateUrl: './registro.html'
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './registro.html',
+  styleUrls: ['./registro.css']
 })
 export class RegistroComponent {
-  private auth = inject(Auth);
-  private router = inject(Router);
-  
   email = '';
   password = '';
+  confirmPassword = '';
+
+  private auth = inject(Auth);
+  private router = inject(Router);
+
+  private correosAdmin = [
+    'admin@glow.com',
+    'vendedor@glow.com'
+  ];
 
   async registrarse() {
+    // 1. Validar largo de contraseña
+    if (this.password.length < 6) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Contraseña muy corta',
+        text: 'La contraseña debe tener al menos 6 caracteres.',
+        background: '#171717',
+        color: '#ffffff',
+        confirmButtonColor: '#10b981',
+        customClass: {
+          popup: 'rounded-2xl border border-neutral-800 shadow-2xl'
+        }
+      });
+      return;
+    }
+
+    // 2. Validar coincidencia de contraseñas
+    if (this.password !== this.confirmPassword) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Las contraseñas no coinciden',
+        text: 'Por favor verificá que ambas contraseñas sean iguales.',
+        background: '#171717',
+        color: '#ffffff',
+        confirmButtonColor: '#10b981',
+        customClass: {
+          popup: 'rounded-2xl border border-neutral-800 shadow-2xl'
+        }
+      });
+      return;
+    }
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(this.auth, this.email, this.password);
-      // Aquí asignamos el rol de cliente al usuario recién creado
-      localStorage.setItem('usuarioRol', 'cliente'); 
-      console.log('Usuario registrado:', userCredential.user);
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error('Error al registrarse:', error);
-      alert('Hubo un error al registrarte. Intenta de nuevo.');
+      await createUserWithEmailAndPassword(this.auth, this.email, this.password);
+      
+      const emailLimpio = this.email.trim().toLowerCase();
+
+      const esAdmin = this.correosAdmin.includes(emailLimpio);
+      const rolDefinitivo = esAdmin ? 'admin' : 'cliente';
+
+      localStorage.setItem('usuarioRol', rolDefinitivo);
+      localStorage.setItem('usuarioEmail', emailLimpio);
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cuenta creada con éxito! 🎉',
+        text: 'Bienvenida a Glow & Style.',
+        background: '#171717',
+        color: '#ffffff',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Ir a la Tienda',
+        customClass: {
+          popup: 'rounded-2xl border border-neutral-800 shadow-2xl'
+        }
+      }).then(() => {
+        this.router.navigate(['/dashboard']);
+      });
+
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === 'auth/weak-password') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Contraseña débil',
+          text: 'La contraseña es demasiado fácil de adivinar.',
+          background: '#171717',
+          color: '#ffffff',
+          confirmButtonColor: '#10b981',
+          customClass: {
+            popup: 'rounded-2xl border border-neutral-800 shadow-2xl'
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al registrarse',
+          text: 'Ocurrió un problema al crear tu cuenta. Intentá de nuevo.',
+          background: '#171717',
+          color: '#ffffff',
+          confirmButtonColor: '#10b981',
+          customClass: {
+            popup: 'rounded-2xl border border-neutral-800 shadow-2xl'
+          }
+        });
+      }
     }
   }
 }
