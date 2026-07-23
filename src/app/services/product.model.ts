@@ -11,8 +11,16 @@ export interface PlatziProduct {
 }
 
 export interface ProductoInventario extends PlatziProduct {
+  idFirebase?: string; 
   stockActual: number;
   precioVenta: number;
   estadoStock: 'Disponible' | 'Bajo Stock' | 'Sin Stock';
 }
 
+export interface Venta {
+  idFirebase?: string;
+  productos: ProductoInventario[];
+  total: number;
+  usuarioEmail: string;
+  fecha: string;
+}

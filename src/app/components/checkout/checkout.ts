@@ -6,6 +6,8 @@ import { CartService } from '../../services/cart';
 import { jsPDF } from 'jspdf';
 import { HeaderComponent } from '../header/header';
 import Swal from 'sweetalert2';
+import { ProductService } from '../../services/product';
+
 
 @Component({
   selector: 'app-checkout',
@@ -254,6 +256,7 @@ import Swal from 'sweetalert2';
 export class CheckoutComponent {
   cartService = inject(CartService);
   router = inject(Router);
+  private productService = inject(ProductService);
 
   pasoActual = signal<number>(1);
   tipoEnvio = signal<'sucursal' | 'envio'>('sucursal');
@@ -291,7 +294,26 @@ export class CheckoutComponent {
     const doc = new jsPDF();
     const items = this.cartService.items();
     const total = this.calcularTotalFinal();
+    const emailUsuario = localStorage.getItem('usuarioEmail') || 'Cliente Anónimo';
 
+    // 1. Guardar la venta en Firebase antes de generar el PDF
+    const nuevaVenta = {
+      productos: items,
+      total: total,
+      metodoPago: this.metodoPago(),
+      tipoEntrega: this.tipoEnvio(),
+      direccion: this.tipoEnvio() === 'envio' ? `${this.direccionEnvio}, ${this.ciudadEnvio}` : 'Retiro en Sucursal',
+      usuarioEmail: emailUsuario,
+      fecha: new Date().toLocaleDateString('es-AR')
+    };
+
+    this.productService.registrarVentaFirebase(nuevaVenta).then(() => {
+      console.log('Venta registrada exitosamente en la nube');
+    }).catch(err => {
+      console.error('Error al registrar la venta:', err);
+    });
+
+    // 2. Generación del comprobante PDF
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.setTextColor(16, 185, 129);
@@ -342,6 +364,7 @@ export class CheckoutComponent {
 
     doc.save("comprobante-glow-style.pdf");
 
+    // 3. Limpieza y redirección
     this.cartService.vaciarCarrito();
 
     Swal.fire({

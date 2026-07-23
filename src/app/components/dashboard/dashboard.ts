@@ -237,23 +237,37 @@ export class DashboardComponent implements OnInit {
   }
 
   cargarProductos(): void {
-    const productosGuardados = localStorage.getItem('mis_productos_glow');
-    if (productosGuardados) {
-      this.productos.set(JSON.parse(productosGuardados));
-    } else {
-      this.productService.getInventario().subscribe({
-        next: (data) => {
-          const datosTransformados = data.map((p) => ({
-            ...p,
-            price: p.id < 1000 && p.price > 1000 ? 45 : p.price,
-            precioVenta: Math.round((p.id < 1000 && p.price > 1000 ? 45 : p.price) * 1.4),
-            category: { ...p.category, name: 'Clothes' }
-          }));
-          this.productos.set(datosTransformados);
-          localStorage.setItem('mis_productos_glow', JSON.stringify(datosTransformados));
+    this.productService.getProductosFirebase().subscribe({
+      next: (data: any) => {
+        if (!data || data.length === 0) {
+          // 1. Revisar si hay productos viejos en el localStorage
+          const localGuardado = localStorage.getItem('mis_productos_glow');
+          
+          if (localGuardado) {
+            const productosLocales: ProductoInventario[] = JSON.parse(localGuardado);
+            // Subimos cada uno a Firebase de forma segura
+            productosLocales.forEach(prod => {
+              const { idFirebase, ...prodSinId } = prod as any;
+              this.productService.agregarProductoFirebase(prodSinId);
+            });
+            // Recargamos después de un segundo para que los tome de Firebase
+            setTimeout(() => this.cargarProductos(), 1500);
+          } else {
+            // 2. Si tampoco hay en localStorage, cargamos los de la API de Platzi como antes
+            this.productService.getInventario().subscribe(productosApi => {
+              productosApi.slice(0, 15).forEach(prod => {
+                const { idFirebase, ...prodBienHecho } = prod as any;
+                this.productService.agregarProductoFirebase(prodBienHecho);
+              });
+              setTimeout(() => this.cargarProductos(), 1500);
+            });
+          }
+        } else {
+          this.productos.set(data);
         }
-      });
-    }
+      },
+      error: (err) => console.error('Error al cargar productos de Firebase:', err)
+    });
   }
 
   productosFiltrados = computed(() => {
@@ -283,22 +297,34 @@ export class DashboardComponent implements OnInit {
   }
 
   sumarStock(producto: ProductoInventario): void {
-    this.productos.update(lista => {
-      const nuevaLista = lista.map(p => p.id === producto.id ? { ...p, stockActual: p.stockActual + 1 } : p);
-      this.guardarEnLocalStorage(nuevaLista);
-      return nuevaLista;
+    if (!producto.idFirebase) return;
+    const nuevoStock = (producto.stockActual || 0) + 1;
+    let nuevoEstado: 'Disponible' | 'Bajo Stock' | 'Sin Stock' = 'Disponible';
+    if (nuevoStock === 0) nuevoEstado = 'Sin Stock';
+    else if (nuevoStock <= 5) nuevoEstado = 'Bajo Stock';
+
+    this.productService.actualizarProductoFirebase(producto.idFirebase, { 
+      stockActual: nuevoStock, 
+      estadoStock: nuevoEstado 
     });
   }
 
   restarStock(producto: ProductoInventario): void {
-    this.productos.update(lista => {
-      const nuevaLista = lista.map(p => p.id === producto.id && p.stockActual > 0 ? { ...p, stockActual: p.stockActual - 1 } : p);
-      this.guardarEnLocalStorage(nuevaLista);
-      return nuevaLista;
+    if (!producto.idFirebase || producto.stockActual <= 0) return;
+    const nuevoStock = producto.stockActual - 1;
+    let nuevoEstado: 'Disponible' | 'Bajo Stock' | 'Sin Stock' = 'Disponible';
+    if (nuevoStock === 0) nuevoEstado = 'Sin Stock';
+    else if (nuevoStock <= 5) nuevoEstado = 'Bajo Stock';
+
+    this.productService.actualizarProductoFirebase(producto.idFirebase, { 
+      stockActual: nuevoStock, 
+      estadoStock: nuevoEstado 
     });
   }
 
-  eliminarProducto(id: number): void {
+  eliminarProducto(idFirebase?: string): void {
+    if (!idFirebase) return;
+
     Swal.fire({
       title: '¿Eliminar producto?',
       text: 'Esta acción no se puede deshacer.',
@@ -312,22 +338,18 @@ export class DashboardComponent implements OnInit {
       color: '#ffffff'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.productos.update(lista => {
-          const nuevaLista = lista.filter(p => p.id !== id);
-          this.guardarEnLocalStorage(nuevaLista);
-          return nuevaLista;
-        });
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Eliminado',
-          text: 'El producto fue removido.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 2000,
-          background: '#171717',
-          color: '#ef4444'
+        this.productService.eliminarProductoFirebase(idFirebase).then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Eliminado',
+            text: 'El producto fue removido de la base de datos.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            background: '#171717',
+            color: '#ef4444'
+          });
         });
       }
     });
@@ -381,26 +403,23 @@ export class DashboardComponent implements OnInit {
       category: { id: 1, name: 'Clothes' } 
     };
 
-    this.productos.update(lista => {
-      const nuevaLista = [nuevoProd, ...lista];
-      this.guardarEnLocalStorage(nuevaLista);
-      return nuevaLista;
-    });
+    // AQUÍ CAMBIAMOS: Guardamos directamente en Firestore
+    this.productService.agregarProductoFirebase(nuevoProd).then(() => {
+      this.nuevoNombre.set('');
+      this.nuevoPrecioCosto.set(0);
+      this.mostrarFormulario.set(false);
 
-    this.nuevoNombre.set('');
-    this.nuevoPrecioCosto.set(0);
-    this.mostrarFormulario.set(false);
-
-    Swal.fire({
-      icon: 'success',
-      title: '¡Producto Agregado!',
-      text: 'La nueva prenda ya está en el catálogo.',
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2500,
-      background: '#171717',
-      color: '#10b981'
+      Swal.fire({
+        icon: 'success',
+        title: '¡Producto Agregado!',
+        text: 'La nueva prenda ya está en la base de datos.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#171717',
+        color: '#10b981'
+      });
     });
   }
 
