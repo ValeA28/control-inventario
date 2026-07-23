@@ -297,31 +297,40 @@ export class DashboardComponent implements OnInit {
   }
 
   sumarStock(producto: ProductoInventario): void {
-    if (!producto.idFirebase) return;
+    const idUnico = (producto as any).idFirebase || (producto as any).id;
+    if (!idUnico) return;
+
     const nuevoStock = (producto.stockActual || 0) + 1;
     let nuevoEstado: 'Disponible' | 'Bajo Stock' | 'Sin Stock' = 'Disponible';
     if (nuevoStock === 0) nuevoEstado = 'Sin Stock';
     else if (nuevoStock <= 5) nuevoEstado = 'Bajo Stock';
 
-    this.productService.actualizarProductoFirebase(producto.idFirebase, { 
+    this.productService.actualizarProductoFirebase(idUnico.toString(), { 
       stockActual: nuevoStock, 
       estadoStock: nuevoEstado 
+    }).then(() => {
+      this.cargarProductos(); // Recarga la tabla al instante
     });
   }
 
   restarStock(producto: ProductoInventario): void {
-    if (!producto.idFirebase || producto.stockActual <= 0) return;
+    if ((producto.stockActual || 0) <= 0) return;
+    const idUnico = (producto as any).idFirebase || (producto as any).id;
+    if (!idUnico) return;
+
     const nuevoStock = producto.stockActual - 1;
     let nuevoEstado: 'Disponible' | 'Bajo Stock' | 'Sin Stock' = 'Disponible';
     if (nuevoStock === 0) nuevoEstado = 'Sin Stock';
     else if (nuevoStock <= 5) nuevoEstado = 'Bajo Stock';
 
-    this.productService.actualizarProductoFirebase(producto.idFirebase, { 
+    this.productService.actualizarProductoFirebase(idUnico.toString(), { 
       stockActual: nuevoStock, 
       estadoStock: nuevoEstado 
+    }).then(() => {
+      this.cargarProductos(); // Recarga la tabla al instante
     });
   }
-
+  
   eliminarProducto(idFirebase?: string): void {
     if (!idFirebase) return;
 

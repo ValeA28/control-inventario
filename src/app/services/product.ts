@@ -42,7 +42,7 @@ export class ProductService {
 
   // --- MÉTODOS PARA CLOUD FIRESTORE ---
 
-  // 1. Obtener productos desde Firestore de forma estable
+  // 1. Obtener productos desde Firestore en tiempo real
   getProductosFirebase(): Observable<ProductoInventario[]> {
     const productosRef = collection(this.firestore, 'productos');
     return new Observable(observer => {
@@ -99,5 +99,5 @@ export class ProductService {
       });
     });
   }
-  
+
 }
