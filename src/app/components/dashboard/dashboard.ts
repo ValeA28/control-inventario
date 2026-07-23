@@ -55,6 +55,7 @@ export class DashboardComponent implements OnInit {
   vistaActual = signal<string>('principal');
   nuevoNombre = signal<string>('');
   nuevoPrecioCosto = signal<number>(0); 
+  nuevaImagenBase64 = signal<string>('');
   mostrarFormularioEditar = signal<boolean>(false);
   productoSeleccionado = signal<ProductoInventario | null>(null);
   editarNombre = signal<string>('');
@@ -385,6 +386,17 @@ export class DashboardComponent implements OnInit {
     return this.fotosRemeras[Math.floor(Math.random() * this.fotosRemeras.length)];
   }
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.nuevaImagenBase64.set(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   agregarProducto(): void {
     if (!this.nuevoNombre().trim() || this.nuevoPrecioCosto() <= 0) {
       Swal.fire({
@@ -398,7 +410,9 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    const imagenSeleccionada = this.obtenerImagenSegunNombre(this.nuevoNombre());
+    const imagenFinal = this.nuevaImagenBase64().trim() !== '' 
+      ? this.nuevaImagenBase64() 
+      : this.obtenerImagenSegunNombre(this.nuevoNombre());
 
     const nuevoProd: ProductoInventario = { 
       id: Date.now(), 
@@ -407,16 +421,19 @@ export class DashboardComponent implements OnInit {
       precioVenta: Math.round(this.nuevoPrecioCosto() * 1.4), 
       stockActual: 10, 
       estadoStock: 'Disponible', 
-      images: [imagenSeleccionada], 
+      images: [imagenFinal],
       description: '', 
       category: { id: 1, name: 'Clothes' } 
     };
 
-    // AQUÍ CAMBIAMOS: Guardamos directamente en Firestore
-    this.productService.agregarProductoFirebase(nuevoProd).then(() => {
+      this.productService.agregarProductoFirebase(nuevoProd).then(() => {
       this.nuevoNombre.set('');
       this.nuevoPrecioCosto.set(0);
+      this.nuevaImagenBase64.set(''); // Resetea la foto subida
       this.mostrarFormulario.set(false);
+      this.cargarProductos(); // Recarga la tabla al instante
+
+      this.cargarProductos();
 
       Swal.fire({
         icon: 'success',
