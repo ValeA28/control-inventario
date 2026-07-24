@@ -72,7 +72,7 @@ export class RegistroComponent {
       Swal.fire({
         icon: 'success',
         title: '¡Cuenta creada con éxito! 🎉',
-        text: 'Bienvenida a Glow & Style.',
+        text: 'Bienvenida/o a Glow & Style.',
         background: '#171717',
         color: '#ffffff',
         confirmButtonColor: '#10b981',

@@ -61,6 +61,12 @@ export class DashboardComponent implements OnInit {
   editarNombre = signal<string>('');
   editarPrecioCosto = signal<number>(0);
 
+  // NUEVAS SIGNALS PARA TALLES Y COLORES (VENDEDOR)
+  nuevoTalles = signal<string>('S, M, L, XL');
+  nuevoColores = signal<string>('Negro, Blanco, Gris');
+  editarTalles = signal<string>('');
+  editarColores = signal<string>('');
+
   // Bancos de imágenes
   private fotosRemeras = [
     'assets/img/remeras/21147027-j-2-bbfa00f4e637aa7ef117259745550623-1024-1024.jpg', 
@@ -423,17 +429,20 @@ export class DashboardComponent implements OnInit {
       estadoStock: 'Disponible', 
       images: [imagenFinal],
       description: '', 
-      category: { id: 1, name: 'Clothes' } 
+      category: { id: 1, name: 'Clothes' },
+      // GUARDAMOS TALLES Y COLORES EN EL PRODUCTO NUEVO
+      tallesDisponibles: this.nuevoTalles().split(',').map(t => t.trim()).filter(t => t !== ''),
+      coloresDisponibles: this.nuevoColores().split(',').map(c => c.trim()).filter(c => c !== '')
     };
 
-      this.productService.agregarProductoFirebase(nuevoProd).then(() => {
+    this.productService.agregarProductoFirebase(nuevoProd).then(() => {
       this.nuevoNombre.set('');
       this.nuevoPrecioCosto.set(0);
       this.nuevaImagenBase64.set(''); // Resetea la foto subida
+      this.nuevoTalles.set('S, M, L, XL');
+      this.nuevoColores.set('Negro, Blanco, Gris');
       this.mostrarFormulario.set(false);
       this.cargarProductos(); // Recarga la tabla al instante
-
-      this.cargarProductos();
 
       Swal.fire({
         icon: 'success',
@@ -453,6 +462,9 @@ export class DashboardComponent implements OnInit {
     this.productoSeleccionado.set(producto);
     this.editarNombre.set(producto.title);
     this.editarPrecioCosto.set(producto.price);
+    // CARGAMOS TALLES Y COLORES EXISTENTES PARA EDITAR
+    this.editarTalles.set(producto.tallesDisponibles ? producto.tallesDisponibles.join(', ') : 'S, M, L');
+    this.editarColores.set(producto.coloresDisponibles ? producto.coloresDisponibles.join(', ') : 'Negro, Blanco');
     this.mostrarFormularioEditar.set(true);
   }
 
@@ -460,25 +472,34 @@ export class DashboardComponent implements OnInit {
     const prod = this.productoSeleccionado();
     if (!prod) return;
 
-    this.productos.update(lista => {
-      const nuevaLista = lista.map(p => {
-        if (p.id === prod.id) {
-          const nuevaImagen = this.obtenerImagenSegunNombre(this.editarNombre());
-          return { 
-            ...p, 
-            title: this.editarNombre().trim(), 
-            price: this.editarPrecioCosto(), 
-            precioVenta: Math.round(this.editarPrecioCosto() * 1.4),
-            images: [nuevaImagen]
-          };
-        }
-        return p;
-      });
-      this.guardarEnLocalStorage(nuevaLista);
-      return nuevaLista;
-    });
+    const idUnico = (prod as any).idFirebase || prod.id;
 
-    this.mostrarFormularioEditar.set(false);
+    const datosActualizados = {
+      title: this.editarNombre().trim(),
+      price: this.editarPrecioCosto(),
+      precioVenta: Math.round(this.editarPrecioCosto() * 1.4),
+      tallesDisponibles: this.editarTalles().split(',').map(t => t.trim()).filter(t => t !== ''),
+      coloresDisponibles: this.editarColores().split(',').map(c => c.trim()).filter(c => c !== '')
+    };
+
+    if ((prod as any).idFirebase) {
+      this.productService.actualizarProductoFirebase((prod as any).idFirebase, datosActualizados).then(() => {
+        this.mostrarFormularioEditar.set(false);
+        this.cargarProductos();
+      });
+    } else {
+      this.productos.update(lista => {
+        const nuevaLista = lista.map(p => {
+          if (p.id === prod.id) {
+            return { ...p, ...datosActualizados };
+          }
+          return p;
+        });
+        this.guardarEnLocalStorage(nuevaLista);
+        return nuevaLista;
+      });
+      this.mostrarFormularioEditar.set(false);
+    }
 
     Swal.fire({
       icon: 'success',

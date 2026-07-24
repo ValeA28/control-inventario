@@ -15,6 +15,10 @@ export interface ProductoInventario extends PlatziProduct {
   stockActual: number;
   precioVenta: number;
   estadoStock: 'Disponible' | 'Bajo Stock' | 'Sin Stock';
+  tallesDisponibles?: string[];
+  coloresDisponibles?: string[];
+  talleSeleccionado?: string;
+  colorSeleccionado?: string;
 }
 
 export interface Venta {
