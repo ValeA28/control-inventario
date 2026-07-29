@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "control-inventario-57664"
-  }
+    "default": "controlinventario-pruebas"
+  },
+  "targets": {},
+  "etags": {}
 }
