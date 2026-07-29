@@ -8,7 +8,6 @@ import { HeaderComponent } from '../header/header';
 import Swal from 'sweetalert2';
 import { ProductService } from '../../services/product';
 
-
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -201,22 +200,23 @@ import { ProductService } from '../../services/product';
                 </button>
               </div>
 
+              <!-- FORMULARIO TARJETA VINCULADO -->
               <div *ngIf="metodoPago() === 'tarjeta'" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                 <div>
                   <label class="text-[10px] text-neutral-400 block mb-1">Número de Tarjeta</label>
-                  <input type="text" placeholder="4532 •••• •••• 8900" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
+                  <input type="text" [(ngModel)]="numeroTarjeta" placeholder="4532 •••• •••• 8900" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
                   <label class="text-[10px] text-neutral-400 block mb-1">Titular de la Tarjeta</label>
-                  <input type="text" placeholder="Valentina Gómez" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
+                  <input type="text" [(ngModel)]="titularTarjeta" placeholder="Valentina Gómez" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
                   <label class="text-[10px] text-neutral-400 block mb-1">Vencimiento</label>
-                  <input type="text" placeholder="MM/AA" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
+                  <input type="text" [(ngModel)]="vencimientoTarjeta" placeholder="MM/AA" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
                   <label class="text-[10px] text-neutral-400 block mb-1">CVC / CVV</label>
-                  <input type="password" placeholder="123" maxlength="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
+                  <input type="password" [(ngModel)]="cvcTarjeta" placeholder="123" maxlength="4" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-200 focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
 
@@ -265,6 +265,12 @@ export class CheckoutComponent {
   direccionEnvio = '';
   ciudadEnvio = '';
 
+  // Variables para la tarjeta
+  numeroTarjeta = '';
+  titularTarjeta = '';
+  vencimientoTarjeta = '';
+  cvcTarjeta = '';
+
   calcularTotalFinal(): number {
     const subtotal = this.cartService.totalPrecio();
     return this.tipoEnvio() === 'envio' ? subtotal + 1500 : subtotal;
@@ -291,6 +297,21 @@ export class CheckoutComponent {
   }
 
   pagarYGenerarPDF() {
+    // Validar datos de tarjeta si el método de pago seleccionado es 'tarjeta'
+    if (this.metodoPago() === 'tarjeta') {
+      if (!this.numeroTarjeta.trim() || !this.titularTarjeta.trim() || !this.vencimientoTarjeta.trim() || !this.cvcTarjeta.trim()) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos Incompletos',
+          text: 'Por favor, complete todos los datos de la tarjeta para poder procesar el pago.',
+          background: '#171717',
+          color: '#ffffff',
+          confirmButtonColor: '#10b981'
+        });
+        return; // Frena la compra si falta algún dato
+      }
+    }
+
     const doc = new jsPDF();
     const items = this.cartService.items();
     const total = this.calcularTotalFinal();
